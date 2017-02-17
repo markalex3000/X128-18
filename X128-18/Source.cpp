@@ -35,15 +35,18 @@ struct quad_data {
 };
 
 void print_q_d_l(vector<quad_data> & qdl);
+bool coefs_good(quad_data & qd);
+double calc_determ(quad_data & qd);
+bool calc_roots(quad_data & qd);
 
 int main() {
 	quad_data temp_q_d;
 	vector<quad_data> quad_data_list;
+	quad_data calced_q_d;
 	ifstream ist{ "testdata.txt"};
 	if (ist.bad()) simple_error("problemn with the file... exiting.");
 
-	while (!ist.eof()) {
-		for (int i = 0; i < 8; ++i) {
+	while (!ist.eof()) {						//assumes no errors in input file
 			ist >> temp_q_d.a;
 			ist >> temp_q_d.b;
 			ist >> temp_q_d.c;
@@ -53,17 +56,34 @@ int main() {
 			ist >> temp_q_d.x1;
 			ist >> temp_q_d.x2;
 			quad_data_list.push_back(temp_q_d);
-		}
 	}
 	print_q_d_l(quad_data_list);
 
+	cout << "\nCalculating values...\n";
 
+	for (int i = 0; i < quad_data_list.size(); ++i) {
+		if (!coefs_good) continue;
+
+		else {
+			calced_q_d.a = quad_data_list[i].a;
+			calced_q_d.b = quad_data_list[i].b;
+			calced_q_d.c = quad_data_list[i].c;
+			calced_q_d.determinate = calc_determ(calced_q_d);
+		}
+		if (!calc_roots(calced_q_d)) {
+			cout << "AWKWARD: there are no real roots!\n";
+			continue;
+			}
+		quad_data_list.insert(quad_data_list.begin() + i, calced_q_d);
+		i += 1;
+	}
+	print_q_d_l(quad_data_list);
 	keep_window_open();
 	return(0);
 }
 
 void print_q_d_l(vector<quad_data> & qdl) {
-	cout << "a\tb\c\tcc\tdeterm\tsqr_det\tx1\tx2\n";
+	cout << "a\tb\tc\tcc\tdeterm\tsqr_det\tx1\tx2\n";
 	for (int i = 0; i < qdl.size(); ++i) {
 		cout << qdl[i].a << "\t";
 		cout << qdl[i].b << "\t";
@@ -74,5 +94,31 @@ void print_q_d_l(vector<quad_data> & qdl) {
 		cout << qdl[i].x1 << "\t";
 		cout << qdl[i].x2 << "\t";
 		cout << "\n";
+	}
+}
+
+bool coefs_good(quad_data & qd)
+{
+	if (qd.a == 0) return false;
+	else return true;
+}
+
+double calc_determ(quad_data& qd)
+{
+	return((qd.b * qd.b) + (4 * qd.a * qd.c));
+}
+
+bool calc_roots(quad_data & qd)
+{
+	if (qd.determinate < 0) return false;
+	else if (qd.determinate == 0) {
+		qd.x1 = qd.b / (2 * qd.a);
+		qd.x2 = qd.x1;
+		return true;
+	}
+	else {
+		qd.x1 = ((-qd.b + sqrt(qd.determinate) / (2 * qd.a)));
+		qd.x1 = ((-qd.b - sqrt(qd.determinate) / (2 * qd.a)));
+		return true;
 	}
 }
