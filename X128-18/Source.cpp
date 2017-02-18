@@ -1,4 +1,5 @@
 // find the roots of a quadratic equation
+// note the term 'determinate' is used throughout - should be 'discrimant'
 
 // Start standsard opening
 
@@ -35,6 +36,7 @@ struct quad_data {
 };
 
 void print_q_d_l(vector<quad_data> & qdl);
+void print_q_d(quad_data & qd);
 bool coefs_good(quad_data & qd);
 double calc_determ(quad_data & qd);
 bool calc_roots(quad_data & qd);
@@ -43,11 +45,11 @@ int main() {
 	quad_data temp_q_d;
 	vector<quad_data> quad_data_list;
 	quad_data calced_q_d;
-	ifstream ist{ "testdata.txt"};
-	if (ist.bad()) simple_error("problemn with the file... exiting.");
+	ifstream ist{"testdata.txt"};
+	if (!ist) simple_error("problemn with the file... exiting.");  // seems simplest way to check that file was opened
 
 	while (!ist.eof()) {						//assumes no errors in input file
-			ist >> temp_q_d.a;
+			ist >> temp_q_d.a;					//no error checking on the file reading
 			ist >> temp_q_d.b;
 			ist >> temp_q_d.c;
 			ist >> temp_q_d.cc;
@@ -59,12 +61,14 @@ int main() {
 	}
 	print_q_d_l(quad_data_list);
 
-	cout << "\nCalculating values...\n";
+	cout << "\nCalculating values...\n\n";
+	cout << "a\tb\tc\tcc\tdeterm\tsqr_det\tx1\tx2\n";
 
 	for (int i = 0; i < quad_data_list.size(); ++i) {
-		if (!coefs_good) continue;
+		print_q_d(quad_data_list[i]);	// outputs the version of quad data from the file
+		if (!coefs_good) continue;		// checks that a is not zero
 
-		else {
+		else {			
 			calced_q_d.a = quad_data_list[i].a;
 			calced_q_d.b = quad_data_list[i].b;
 			calced_q_d.c = quad_data_list[i].c;
@@ -74,8 +78,7 @@ int main() {
 			cout << "AWKWARD: there are no real roots!\n";
 			continue;
 			}
-		quad_data_list.insert(quad_data_list.begin() + i, calced_q_d);
-		i += 1;
+		print_q_d(calced_q_d);
 	}
 	print_q_d_l(quad_data_list);
 	keep_window_open();
@@ -97,6 +100,19 @@ void print_q_d_l(vector<quad_data> & qdl) {
 	}
 }
 
+void print_q_d(quad_data & qd)
+{
+	cout << qd.a << "\t";
+	cout << qd.b << "\t";
+	cout << qd.c << "\t";
+	cout << qd.cc << "\t";
+	cout << qd.determinate << "\t";
+	cout << qd.sqrt_determintate << "\t";
+	cout << qd.x1 << "\t";
+	cout << qd.x2 << "\t";
+	cout << "\n";
+}
+
 bool coefs_good(quad_data & qd)
 {
 	if (qd.a == 0) return false;
@@ -105,20 +121,20 @@ bool coefs_good(quad_data & qd)
 
 double calc_determ(quad_data& qd)
 {
-	return((qd.b * qd.b) + (4 * qd.a * qd.c));
+	return((qd.b * qd.b) - (4 * qd.a * qd.c));
 }
 
 bool calc_roots(quad_data & qd)
 {
 	if (qd.determinate < 0) return false;
 	else if (qd.determinate == 0) {
-		qd.x1 = qd.b / (2 * qd.a);
+		qd.x1 = -qd.b / (2 * qd.a);
 		qd.x2 = qd.x1;
 		return true;
 	}
 	else {
-		qd.x1 = ((-qd.b + sqrt(qd.determinate) / (2 * qd.a)));
-		qd.x1 = ((-qd.b - sqrt(qd.determinate) / (2 * qd.a)));
+		qd.x1 = (-qd.b + sqrt(qd.determinate)) / (2 * qd.a);
+		qd.x2 = (-qd.b - sqrt(qd.determinate)) / (2 * qd.a);
 		return true;
 	}
 }
